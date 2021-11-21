@@ -11,7 +11,8 @@ const COLORS = {
   SP: "#482db8",
   SS: "#20af75",
   SSP: "#136745",
-  SSS: "red",
+  SSS: "#d30000",
+  SSSP: "#b40000",
   AJC: "#e51188",
   EXP: "#ff0262",
   ULT: "#862333",
@@ -282,14 +283,17 @@ const drawInfo = (ctx) => {
   ctx.fillStyle = COLORS.SSS;
   ctx.fillText("SSS", 170, 50);
 
+  ctx.fillStyle = COLORS.SSSP;
+  ctx.fillText("SSS+", 210, 50);
+
   ctx.fillStyle = COLORS.AJC;
-  ctx.fillText("AJC", 210, 50);
+  ctx.fillText("AJC", 250, 50);
 
   ctx.fillStyle = COLORS.FULLCHAIN;
-  ctx.fillText("FULLCHAIN", 250, 50);
+  ctx.fillText("FULLCHAIN", 290, 50);
 
   ctx.fillStyle = "#333";
-  ctx.fillText("AはAJ・FはFC", 360, 50);
+  ctx.fillText("AはAJ・FはFC", 400, 50);
 
   ctx.fillStyle = "#333";
   ctx.fillText("下線: ", 15, 80);
@@ -315,6 +319,7 @@ const setupCanvas = (width, height) => {
 
 const colorForScore = (score) => {
   if (score == 1010000) return COLORS.AJC;
+  if (score >= 1009000) return COLORS.SSSP;
   if (score >= 1007500) return COLORS.SSS;
   if (score >= 1005000) return COLORS.SSP;
   if (score >= 1000000) return COLORS.SS;
