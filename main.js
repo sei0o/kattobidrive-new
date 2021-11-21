@@ -143,11 +143,7 @@ const generateForLevel = (lv, records, tracks, generateTemplate) => {
 
         loadedImage++;
         if (loadedImage === tracksLen) {
-          if (generateTemplate) {
-            return canvas.toDataURL();
-          } else {
-            exportPNG(lv, canvas);
-          }
+          exportPNG(lv, canvas);
         }
       };
 
@@ -287,13 +283,13 @@ const drawInfo = (ctx) => {
   ctx.fillText("SSS+", 210, 50);
 
   ctx.fillStyle = COLORS.AJC;
-  ctx.fillText("AJC", 250, 50);
+  ctx.fillText("AJC", 260, 50);
 
   ctx.fillStyle = COLORS.FULLCHAIN;
-  ctx.fillText("FULLCHAIN", 290, 50);
+  ctx.fillText("FULLCHAIN", 300, 50);
 
   ctx.fillStyle = "#333";
-  ctx.fillText("AはAJ・FはFC", 400, 50);
+  ctx.fillText("AはAJ・FはFC", 410, 50);
 
   ctx.fillStyle = "#333";
   ctx.fillText("下線: ", 15, 80);
