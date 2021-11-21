@@ -70,7 +70,10 @@ const convertTracks = (tracks, excludeExp) => {
         continue;
 
       const lv = Math.floor(dic.level);
-      ret[lv][Math.floor((dic.const - lv) * 10)].push({
+      const sp = dic.const.toString().split(".");
+      const dec = sp.length === 2 ? parseInt(sp[1]) : 0;
+      console.log(lv, dec);
+      ret[lv][dec].push({
         id: id,
         diff: diff,
       });
