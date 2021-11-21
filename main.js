@@ -204,7 +204,8 @@ const generateOnTemplateForLevel = (lv, records, tracks) => {
     exportPNG(lv, canvas);
   };
 
-  template.src = `${CACHE_ENDPOINT}/templates/${lv}.png`;
+  //template.src = `${CACHE_ENDPOINT}/templates/${lv}.png`;
+  template.src = `/templates/${lv}.png`;
 };
 
 const putMark = (ctx, x, y, record) => {
