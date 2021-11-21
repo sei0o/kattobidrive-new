@@ -93,6 +93,7 @@ const generateForLevel = (lv, records, tracks) => {
       let imgX = 60 + 60 * (k % 10);
       let imgY = topMargin + 60 * (usedRow + Math.floor(k / 10));
 
+      artwork.crossOrigin = "*";
       artwork.onload = () => {
         const record = records.find((a) => {
           return a.id === track.id && a.diff == track.diff;
