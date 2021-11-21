@@ -240,7 +240,7 @@ const getRecords = async (userName) => {
     body: JSON.stringify({ user_name: userName }),
   });
 
-  return json.json().records;
+  return (await json.json()).records;
 };
 
 // For debugging purpose
