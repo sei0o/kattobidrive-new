@@ -239,7 +239,8 @@ const getRecords = async (userName) => {
     method: "POST",
     body: JSON.stringify({ user_name: userName }),
   });
-  return JSON.parse(json)["records"];
+
+  return json.records;
 };
 
 // For debugging purpose
