@@ -23,11 +23,29 @@ const CACHE_ENDPOINT = "https://clever-hopper-c8bb47.netlify.app";
 const resultsEl = document.getElementById("results");
 
 const generateFillTable = (records, tracks) => {
-  generateForLevel(15, records, tracks);
-  generateForLevel(14, records, tracks);
-  generateForLevel(13, records, tracks);
-  generateForLevel(12, records, tracks);
-  generateForLevel(11, records, tracks);
+  generateForLevel(15, records, tracks, false);
+  generateForLevel(14, records, tracks, false);
+  generateForLevel(13, records, tracks, false);
+  generateForLevel(12, records, tracks, false);
+  generateForLevel(11, records, tracks, false);
+};
+
+const generateTemplate = (tracks) => {
+  return [
+    generateForLevel(15, [], tracks, true),
+    generateForLevel(14, [], tracks, true),
+    generateForLevel(13, [], tracks, true),
+    generateForLevel(12, [], tracks, true),
+    generateForLevel(11, [], tracks, true),
+  ];
+};
+
+const generateOnTemplate = (records, tracks) => {
+  generateOnTemplateForLevel(15, records, tracks);
+  generateOnTemplateForLevel(14, records, tracks);
+  generateOnTemplateForLevel(13, records, tracks);
+  generateOnTemplateForLevel(12, records, tracks);
+  generateOnTemplateForLevel(11, records, tracks);
 };
 
 const convertTracks = (tracks, excludeExp) => {
@@ -61,7 +79,7 @@ const convertTracks = (tracks, excludeExp) => {
   return ret;
 };
 
-const generateForLevel = (lv, records, tracks) => {
+const generateForLevel = (lv, records, tracks, generateTemplate) => {
   let usedRow = 0; // 画像を入れた行の数
   let loadedImage = 0;
   const topMargin = 110;
@@ -97,14 +115,38 @@ const generateForLevel = (lv, records, tracks) => {
 
       artwork.crossOrigin = "*";
       artwork.onload = () => {
-        const record = records.find((a) => {
-          return a.id === track.id && a.diff == track.diff;
-        });
-        drawArtwork(ctx, artwork, imgX, imgY, record, track);
+        if (generateTemplate) {
+          drawArtwork(
+            ctx,
+            artwork,
+            imgX,
+            imgY,
+            undefined,
+            track,
+            generateTemplate
+          );
+        } else {
+          const record = records.find((a) => {
+            return a.id === track.id && a.diff == track.diff;
+          });
+          drawArtwork(
+            ctx,
+            artwork,
+            imgX,
+            imgY,
+            record,
+            track,
+            generateTemplate
+          );
+        }
 
         loadedImage++;
         if (loadedImage === tracksLen) {
-          exportPNG(lv, canvas);
+          if (generateTemplate) {
+            return canvas.toDataURL();
+          } else {
+            exportPNG(lv, canvas);
+          }
         }
       };
 
@@ -115,18 +157,68 @@ const generateForLevel = (lv, records, tracks) => {
   }
 };
 
-const putMark = (ctx, x, y, result) => {
-  ctx.fillStyle = colorForScore(result.score);
+const generateOnTemplateForLevel = (lv, records, tracks) => {
+  let usedRow = 0; // 画像を入れた行の数
+  const topMargin = 110;
+
+  const rowsRequired = tracks[lv]
+    .map((tracksInConst, _idx, _arr) => Math.ceil(tracksInConst.length / 10.0))
+    .reduce((sum, cur) => sum + cur, 0);
+
+  const height = 150 + rowsRequired * 60;
+  const canvas = setupCanvas(700, height);
+  document.body.append(canvas);
+
+  const ctx = canvas.getContext("2d");
+
+  const template = new Image();
+  template.onload = () => {
+    ctx.drawImage(template, 0, 0);
+
+    for (let dec = 9; dec >= 0; dec--) {
+      if (tracks[lv][dec].length === 0) continue;
+
+      for (let k in tracks[lv][dec]) {
+        let track = tracks[lv][dec][k];
+
+        // 60 * (i % 10): artworkを表示、60 + はマージン
+        // usedRow * 60 ですでに使われた行から、さらに10曲で改行
+        let imgX = 60 + 60 * (k % 10);
+        let imgY = topMargin + 60 * (usedRow + Math.floor(k / 10));
+
+        const record = records.find((a) => {
+          return a.id === track.id && a.diff == track.diff;
+        });
+
+        if (record === undefined) {
+          ctx.fillStyle = "rgba(255, 255,255, 0.7)";
+          ctx.fillRect(imgX, imgY, 60, 60);
+        } else {
+          putMark(ctx, imgX, imgY, record);
+        }
+      }
+
+      usedRow += Math.ceil(tracks[lv][dec].length / 10); // 10曲ごとに下の行へ改行
+    }
+
+    exportPNG(lv, canvas);
+  };
+
+  template.src = `${CACHE_ENDPOINT}/templates/${lv}.png`;
+};
+
+const putMark = (ctx, x, y, record) => {
+  ctx.fillStyle = colorForScore(record.score);
   ctx.fillRect(x, y, 30, 30);
 
-  ctx.fillStyle = result.is_fullchain ? COLORS.FULLCHAIN : "white";
+  ctx.fillStyle = record.is_fullchain ? COLORS.FULLCHAIN : "white";
 
   ctx.font = "bold 30px Helvetica Neue";
   ctx.textBaseline = "top";
 
-  if (result.is_alljustice) {
+  if (record.is_alljustice) {
     ctx.fillText("A", x + 5, y);
-  } else if (result.is_fullcombo) {
+  } else if (record.is_fullcombo) {
     ctx.fillText("F", x + 5, y);
   }
 };
@@ -140,12 +232,12 @@ const exportPNG = (lv, canv) => {
   resultsEl.append(document.createElement("br"));
 };
 
-const drawArtwork = (ctx, artwork, x, y, result, track) => {
-  if (result === undefined) ctx.globalAlpha = 0.5; // 未プレイ曲は半透明
+const drawArtwork = (ctx, artwork, x, y, result, track, generateTemplate) => {
+  if (result === undefined && !generateTemplate) ctx.globalAlpha = 0.5; // 未プレイ曲は半透明
 
   ctx.drawImage(artwork, x, y, 60, 60);
 
-  if (result !== undefined) {
+  if (result !== undefined && !generateTemplate) {
     putMark(ctx, x, y, result);
   }
 
@@ -170,7 +262,7 @@ const drawInfo = (ctx) => {
 
   ctx.font = "10px Helvetica Neue";
   ctx.fillStyle = "#555";
-  ctx.fillText("作り方は @kattobidrive を見てね!", 430, 20);
+  ctx.fillText("作り方は @kattobidrive を見てね!", 470, 20);
 
   ctx.font = "18px Helvetica Neue";
 
@@ -270,9 +362,19 @@ const start = async () => {
   const userName = document.getElementById("user_name").value;
   const records = await getRecords(userName);
   const tracksInResponse = await getTracks();
-  const tracks = convertTracks(tracksInResponse);
+  const tracks = convertTracks(tracksInResponse, false);
 
-  generateFillTable(records, tracks);
+  //generateFillTable(records, tracks, false);
+  generateOnTemplate(records, tracks);
+};
+
+const startConst = async () => {
+  resultsEl.innerHTML = "";
+
+  const tracksInResponse = await getTracks();
+  const tracks = convertTracks(tracksInResponse, false);
+
+  return generateTemplate(tracks);
 };
 
 const btn = document.getElementById("generate");
