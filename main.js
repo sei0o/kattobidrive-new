@@ -20,6 +20,8 @@ const COLORS = {
 
 const CACHE_ENDPOINT = "https://clever-hopper-c8bb47.netlify.app";
 
+const resultsEl = document.getElementById("results");
+
 const generateFillTable = (records, tracks) => {
   generateForLevel(15, records, tracks);
   generateForLevel(14, records, tracks);
@@ -134,8 +136,8 @@ const exportPNG = (lv, canv) => {
   elm.href = canv.toDataURL();
   elm.download = `${lv}.png`;
   elm.innerHTML = `Lv${lv} をダウンロード`;
-  document.body.append(elm);
-  document.body.append(document.createElement("br"));
+  resultsEl.append(elm);
+  resultsEl.append(document.createElement("br"));
 };
 
 const drawArtwork = (ctx, artwork, x, y, result, track) => {
@@ -263,6 +265,8 @@ const getTracks = async () => {
 };
 
 const start = async () => {
+  resultsEl.innerHTML = "";
+
   const userName = document.getElementById("user_name").value;
   const records = await getRecords(userName);
   const tracksInResponse = await getTracks();
